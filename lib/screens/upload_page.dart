@@ -6,6 +6,10 @@ import 'package:path_provider/path_provider.dart';
 
 // Import the API service we created
 import 'api_service.dart';
+// Video player imports
+import 'package:video_player/video_player.dart';
+// Subtitle parser
+import 'package:subtitle/subtitle.dart';
 
 class UploadPage extends StatefulWidget {
   @override
@@ -25,12 +29,62 @@ class _UploadPageState extends State<UploadPage> {
   Map<String, dynamic>? _processResults;
   final ApiService _apiService = ApiService();
 
+  // Video player controller
+  VideoPlayerController? _videoPlayerController;
+  bool _isVideoInitialized = false;
+
+  // Subtitle related
+  String _selectedSubtitleLanguage = 'standard_tamil'; // Default
+  Map<String, List<SubtitleEntry>> _subtitlesMap = {};
+  List<SubtitleEntry> _currentSubtitles = [];
+  String _currentSubtitleText = '';
+
   // Color scheme
   final Color _pinkAccent = Color(0xFFED2A90);
   final Color _purpleAccent = Color(0xFFAB49D0);
   final Color _brightPurpleButton = Color(0xFF5E60CD);
   final Color _fgMutedBlue = Color(0xFF142748);
   final Color _bgDarkBlue = Color(0xFF0D2146);
+
+  @override
+  void dispose() {
+    _videoPlayerController?.dispose();
+    super.dispose();
+  }
+
+  void _initializeVideoPlayer() {
+    if (_selectedFile == null) return;
+
+    _videoPlayerController = VideoPlayerController.file(_selectedFile!);
+    _videoPlayerController!.initialize().then((_) {
+      setState(() {
+        _isVideoInitialized = true;
+      });
+
+      // Setup subtitle timing listener
+      _videoPlayerController!.addListener(_checkSubtitles);
+    });
+  }
+
+  void _checkSubtitles() {
+    if (!_isVideoInitialized || _currentSubtitles.isEmpty) return;
+
+    final currentPosition = _videoPlayerController!.value.position;
+    String newSubtitle = '';
+
+    for (var entry in _currentSubtitles) {
+      if (currentPosition >= entry.start && currentPosition <= entry.end) {
+        newSubtitle = entry.text;
+        break;
+      }
+    }
+
+    if (newSubtitle != _currentSubtitleText) {
+      setState(() {
+        _currentSubtitleText = newSubtitle;
+      });
+    }
+  }
 
   void _selectFile() async {
     try {
@@ -49,7 +103,13 @@ class _UploadPageState extends State<UploadPage> {
           _subtitleText = '';
           _uploadId = null;
           _processResults = null;
+          _isVideoInitialized = false;
+          _currentSubtitleText = '';
+          _subtitlesMap = {};
         });
+
+        // Initialize video player with the selected file
+        _initializeVideoPlayer();
       }
     } catch (e) {
       _showErrorDialog('Error selecting file: $e');
@@ -112,6 +172,10 @@ class _UploadPageState extends State<UploadPage> {
       }
     }
 
+    // Stop and dispose of video player
+    _videoPlayerController?.pause();
+    _videoPlayerController?.dispose();
+
     setState(() {
       _fileSelected = false;
       _isUploading = false;
@@ -122,6 +186,10 @@ class _UploadPageState extends State<UploadPage> {
       _selectedFile = null;
       _uploadId = null;
       _processResults = null;
+      _isVideoInitialized = false;
+      _videoPlayerController = null;
+      _currentSubtitleText = '';
+      _subtitlesMap = {};
     });
   }
 
@@ -149,14 +217,17 @@ class _UploadPageState extends State<UploadPage> {
         _isGeneratingSubtitles = false;
         _progress = 1.0;
 
-        // Set the subtitle text based on the selected language
-        // Default to Tamil transcription, but you could add UI to select different results
-        _subtitleText = 'Tanglish-tamil: '+_processResults!['pure_tamil'] + '\n\n' +
+        // Set the subtitle text
+        _subtitleText = 'Tanglish-tamil: ' + _processResults!['pure_tamil'] + '\n\n' +
             'English: ' + _processResults!['english'] + '\n\n' +
-            'Tanglish-eng: ' + _processResults!['tanglish']+'\n\n'+
-            'Tamil :'+ _processResults!['standard_tamil'];
-        ;
+            'Tanglish-eng: ' + _processResults!['tanglish'] + '\n\n' +
+            'Tamil: ' + _processResults!['standard_tamil'];
 
+        // Generate subtitle entries for each language
+        _parseSubtitles();
+
+        // Set current subtitles based on selected language
+        _changeSubtitleLanguage(_selectedSubtitleLanguage);
       });
     } catch (e) {
       setState(() {
@@ -164,6 +235,52 @@ class _UploadPageState extends State<UploadPage> {
       });
       _showErrorDialog('Processing error: $e');
     }
+  }
+
+  void _parseSubtitles() {
+    if (_processResults == null) return;
+
+    _subtitlesMap = {};
+
+    // For each language, create mock subtitle entries
+    // In a real app, you'd parse actual SRT timing data from your API
+    final languages = ['standard_tamil', 'pure_tamil', 'english', 'tanglish'];
+    final videoDuration = _videoPlayerController?.value.duration ?? Duration(minutes: 2);
+
+    for (var lang in languages) {
+      if (_processResults!.containsKey(lang)) {
+        String text = _processResults![lang];
+        List<String> sentences = text.split('. ');
+        List<SubtitleEntry> entries = [];
+
+        // Create equally spaced subtitle entries across the video duration
+        final segmentDuration = videoDuration.inMilliseconds ~/ sentences.length;
+
+        for (int i = 0; i < sentences.length; i++) {
+          if (sentences[i].trim().isNotEmpty) {
+            entries.add(
+                SubtitleEntry(
+                  start: Duration(milliseconds: i * segmentDuration),
+                  end: Duration(milliseconds: (i + 1) * segmentDuration - 100),
+                  text: sentences[i].trim() + (sentences[i].endsWith('.') ? '' : '.'),
+                )
+            );
+          }
+        }
+
+        _subtitlesMap[lang] = entries;
+      }
+    }
+  }
+
+  void _changeSubtitleLanguage(String language) {
+    setState(() {
+      _selectedSubtitleLanguage = language;
+      _currentSubtitles = _subtitlesMap[language] ?? [];
+      // Reset current subtitle text for immediate update
+      _currentSubtitleText = '';
+      _checkSubtitles();
+    });
   }
 
   // Download SRT file
@@ -283,7 +400,7 @@ class _UploadPageState extends State<UploadPage> {
         elevation: 0,
       ),
       body: SafeArea(
-        child: SingleChildScrollView (
+        child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(20.0),
             child: Column(
@@ -308,7 +425,8 @@ class _UploadPageState extends State<UploadPage> {
   }
 
   Widget _buildUploadButton() {
-    return Expanded(
+    return Container(
+      height: 400,
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -363,16 +481,87 @@ class _UploadPageState extends State<UploadPage> {
         Container(
           height: 220,
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [_fgMutedBlue, _fgMutedBlue.withOpacity(0.8)],
-            ),
+            color: Colors.black,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Center(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
             child: _isUploading
                 ? _buildUploadingIndicator()
+                : _isVideoInitialized
+                ? Stack(
+              alignment: Alignment.bottomCenter,
+              children: [
+                // Video Player
+                Center(
+                  child: AspectRatio(
+                    aspectRatio: _videoPlayerController!.value.aspectRatio,
+                    child: VideoPlayer(_videoPlayerController!),
+                  ),
+                ),
+                // Subtitle overlay
+                if (_currentSubtitleText.isNotEmpty)
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    margin: EdgeInsets.only(bottom: 48, left: 16, right: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      _currentSubtitleText,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                // Video Controls
+                Container(
+                  height: 40,
+                  color: Colors.black.withOpacity(0.5),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      IconButton(
+                        icon: Icon(
+                          _videoPlayerController!.value.isPlaying
+                              ? Icons.pause
+                              : Icons.play_arrow,
+                          color: Colors.white,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _videoPlayerController!.value.isPlaying
+                                ? _videoPlayerController!.pause()
+                                : _videoPlayerController!.play();
+                          });
+                        },
+                      ),
+                      Expanded(
+                        child: VideoProgressIndicator(
+                          _videoPlayerController!,
+                          allowScrubbing: true,
+                          colors: VideoProgressColors(
+                            playedColor: _pinkAccent,
+                            bufferedColor: _purpleAccent.withOpacity(0.5),
+                            backgroundColor: Colors.grey,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        _formatDuration(_videoPlayerController!.value.position) +
+                            ' / ' +
+                            _formatDuration(_videoPlayerController!.value.duration),
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      SizedBox(width: 8),
+                    ],
+                  ),
+                ),
+              ],
+            )
                 : Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -417,6 +606,13 @@ class _UploadPageState extends State<UploadPage> {
         ),
       ],
     );
+  }
+
+  String _formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+    String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
+    return "$twoDigitMinutes:$twoDigitSeconds";
   }
 
   Widget _buildUploadingIndicator() {
@@ -534,6 +730,32 @@ class _UploadPageState extends State<UploadPage> {
         ],
         if (_subtitleText.isNotEmpty) ...[
           Text(
+            'Select Subtitle Language',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: Colors.white,
+            ),
+          ),
+          SizedBox(height: 12),
+          // Subtitle language selection
+          Container(
+            height: 50,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: [
+                _buildLanguageButton('Tamil', 'standard_tamil'),
+                SizedBox(width: 8),
+                _buildLanguageButton('Pure Tamil', 'pure_tamil'),
+                SizedBox(width: 8),
+                _buildLanguageButton('English', 'english'),
+                SizedBox(width: 8),
+                _buildLanguageButton('Tanglish', 'tanglish'),
+              ],
+            ),
+          ),
+          SizedBox(height: 16),
+          Text(
             'Generated Subtitles',
             style: TextStyle(
               fontWeight: FontWeight.bold,
@@ -543,18 +765,21 @@ class _UploadPageState extends State<UploadPage> {
           ),
           SizedBox(height: 12),
           Container(
+            height: 200,
             padding: EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: _fgMutedBlue,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: _purpleAccent.withOpacity(0.5)),
             ),
-            child: Text(
-              _subtitleText,
-              style: TextStyle(
-                fontSize: 14,
-                height: 1.5,
-                color: Colors.white,
+            child: SingleChildScrollView(
+              child: Text(
+                _subtitleText,
+                style: TextStyle(
+                  fontSize: 14,
+                  height: 1.5,
+                  color: Colors.white,
+                ),
               ),
             ),
           ),
@@ -626,4 +851,37 @@ class _UploadPageState extends State<UploadPage> {
       ],
     );
   }
+
+  Widget _buildLanguageButton(String label, String languageCode) {
+    bool isSelected = _selectedSubtitleLanguage == languageCode;
+
+    return ElevatedButton(
+      onPressed: () {
+        _changeSubtitleLanguage(languageCode);
+      },
+      style: ElevatedButton.styleFrom(
+        padding: EdgeInsets.symmetric(horizontal: 16),
+        backgroundColor: isSelected ? _pinkAccent : _fgMutedBlue,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        ),
+      ),
+    );
+  }
+}
+
+// Simple subtitle entry class
+class SubtitleEntry {
+  final Duration start;
+  final Duration end;
+  final String text;
+
+  SubtitleEntry({required this.start, required this.end, required this.text});
 }
