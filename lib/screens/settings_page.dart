@@ -6,26 +6,35 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  // Example settings
   bool _notificationsEnabled = true;
   bool _darkModeEnabled = false;
   String _selectedLanguage = 'English';
   double _subtitleFontSize = 16.0;
 
+  // Updated color scheme to match HomePage
+  final Color _pinkAccent = Color(0xFFED2A90);
+  final Color _purpleAccent = Color(0xFFAB49D0);
+  final Color _brightPurpleButton = Color(0xFF5E60CD);
+  final Color _fgMutedBlue = Color(0xFF142748);
+  final Color _bgDarkBlue = Color(0xFF0D2146);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFF3E5F5),
+      backgroundColor: _bgDarkBlue, // Changed to dark blue
       appBar: AppBar(
+        backgroundColor: _bgDarkBlue, // Changed to dark blue
+        elevation: 0,
         title: Text(
           'Settings',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             letterSpacing: 1.5,
+            color: Colors.white,
           ),
         ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -46,7 +55,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     _notificationsEnabled = value;
                   });
                 },
-                activeColor: Color(0xFF6A1B9A),
+                activeColor: _pinkAccent, // Changed to pink accent
               ),
             ),
             _buildSettingCard(
@@ -59,7 +68,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     _darkModeEnabled = value;
                   });
                 },
-                activeColor: Color(0xFF6A1B9A),
+                activeColor: _pinkAccent, // Changed to pink accent
               ),
             ),
             _buildSettingCard(
@@ -68,7 +77,9 @@ class _SettingsPageState extends State<SettingsPage> {
               trailing: DropdownButton<String>(
                 value: _selectedLanguage,
                 underline: Container(),
-                icon: Icon(Icons.arrow_drop_down, color: Color(0xFF6A1B9A)),
+                icon: Icon(Icons.arrow_drop_down, color: _pinkAccent), // Changed to pink accent
+                dropdownColor: _fgMutedBlue, // Added dropdown color
+                style: TextStyle(color: Colors.white), // Added text style
                 onChanged: (String? newValue) {
                   if (newValue != null) {
                     setState(() {
@@ -85,7 +96,6 @@ class _SettingsPageState extends State<SettingsPage> {
                 }).toList(),
               ),
             ),
-
             _buildSectionHeader('Subtitle Settings'),
             _buildSettingCard(
               title: 'Font Size',
@@ -99,7 +109,9 @@ class _SettingsPageState extends State<SettingsPage> {
                     max: 24.0,
                     divisions: 6,
                     label: _subtitleFontSize.toStringAsFixed(1),
-                    activeColor: Color(0xFF6A1B9A),
+                    activeColor: _pinkAccent, // Changed to pink accent
+                    thumbColor: _purpleAccent, // Added thumb color
+                    inactiveColor: _brightPurpleButton.withOpacity(0.3), // Added inactive color
                     onChanged: (double value) {
                       setState(() {
                         _subtitleFontSize = value;
@@ -111,8 +123,8 @@ class _SettingsPageState extends State<SettingsPage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Small', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-                        Text('Large', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                        Text('Small', style: TextStyle(fontSize: 12, color: Colors.white70)),
+                        Text('Large', style: TextStyle(fontSize: 12, color: Colors.white70)),
                       ],
                     ),
                   ),
@@ -123,62 +135,55 @@ class _SettingsPageState extends State<SettingsPage> {
               title: 'Default Language Pairs',
               subtitle: 'Change default translation settings',
               onTap: () {
-                // Navigate to language pair settings
-                // This would be another screen in a real app
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text('Language pair settings coming soon!'),
-                    backgroundColor: Color(0xFF6A1B9A),
+                    backgroundColor: _purpleAccent, // Changed to purple accent
                   ),
                 );
               },
-              trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+              trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white70),
             ),
-
             _buildSectionHeader('Account & Data'),
             _buildSettingCard(
               title: 'Account Information',
               subtitle: 'Manage your profile',
               onTap: () {
-                // Navigate to account settings
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text('Account settings coming soon!'),
-                    backgroundColor: Color(0xFF6A1B9A),
+                    backgroundColor: _purpleAccent, // Changed to purple accent
                   ),
                 );
               },
-              trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+              trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white70),
             ),
             _buildSettingCard(
               title: 'Storage Management',
               subtitle: 'Manage video and subtitle files',
               onTap: () {
-                // Navigate to storage settings
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text('Storage management coming soon!'),
-                    backgroundColor: Color(0xFF6A1B9A),
+                    backgroundColor: _purpleAccent, // Changed to purple accent
                   ),
                 );
               },
-              trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+              trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white70),
             ),
             _buildSettingCard(
               title: 'Privacy Policy',
               subtitle: 'Read our privacy policy',
               onTap: () {
-                // Navigate to privacy policy
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text('Privacy policy coming soon!'),
-                    backgroundColor: Color(0xFF6A1B9A),
+                    backgroundColor: _purpleAccent, // Changed to purple accent
                   ),
                 );
               },
-              trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+              trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white70),
             ),
-
             _buildSectionHeader('About'),
             _buildSettingCard(
               title: 'App Version',
@@ -189,32 +194,29 @@ class _SettingsPageState extends State<SettingsPage> {
               title: 'Help & Support',
               subtitle: 'Get assistance with the app',
               onTap: () {
-                // Navigate to help & support
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text('Help & support coming soon!'),
-                    backgroundColor: Color(0xFF6A1B9A),
+                    backgroundColor: _purpleAccent, // Changed to purple accent
                   ),
                 );
               },
-              trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+              trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white70),
             ),
-
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 24.0, horizontal: 16.0),
               child: Center(
                 child: ElevatedButton(
                   onPressed: () {
-                    // Handle sign out
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text('Sign out functionality coming soon!'),
-                        backgroundColor: Color(0xFF6A1B9A),
+                        backgroundColor: _purpleAccent, // Changed to purple accent
                       ),
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF6A1B9A),
+                    backgroundColor: _brightPurpleButton, // Changed to bright purple
                     padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -231,8 +233,6 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
               ),
             ),
-
-            // Add some padding at the bottom
             SizedBox(height: 24),
           ],
         ),
@@ -248,7 +248,7 @@ class _SettingsPageState extends State<SettingsPage> {
         style: TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.bold,
-          color: Color(0xFF6A1B9A),
+          color: _pinkAccent, // Changed to pink accent
         ),
       ),
     );
@@ -262,14 +262,17 @@ class _SettingsPageState extends State<SettingsPage> {
     VoidCallback? onTap,
   }) {
     return Card(
+      color: _fgMutedBlue, // Changed to foreground muted blue
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      elevation: 0,
+      elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: _brightPurpleButton.withOpacity(0.3), width: 1), // Added border
       ),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
+        splashColor: _purpleAccent.withOpacity(0.3), // Changed splash color
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -287,6 +290,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
+                            color: Colors.white, // Changed to white
                           ),
                         ),
                         SizedBox(height: 4),
@@ -294,7 +298,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           subtitle,
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.grey.shade600,
+                            color: Colors.white70, // Changed to white with opacity
                           ),
                         ),
                       ],

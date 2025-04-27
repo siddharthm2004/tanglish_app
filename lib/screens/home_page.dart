@@ -8,100 +8,85 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+  // Color scheme matching the app theme
+  final Color _pinkAccent = Color(0xFFED2A90);
+  final Color _purpleAccent = Color(0xFFAB49D0);
+  final Color _brightPurpleButton = Color(0xFF5E60CD);
+  final Color _fgMutedBlue = Color(0xFF142748);
+  final Color _bgDarkBlue = Color(0xFF0D2146);
 
+  void _onItemTapped(int index) {
     if (index == 0) {
-      // Home - Do nothing as we're already here
+      Navigator.pushNamed(context, '/home');
+
     } else if (index == 1) {
-      Navigator.pushNamed(context, '/upload');
-    } else if (index == 2) {
-      Navigator.pushNamed(context, '/subtitle');
-    } else if (index == 3) {
-      // New history tab
       Navigator.pushNamed(context, '/history');
+    }
+    else if (index == 2) {
+      Navigator.pushNamed(context, '/upload');
+    }else if (index == 3) {
+      Navigator.pushNamed(context, '/settings');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFF3E5F5),
+      backgroundColor: _bgDarkBlue,
       appBar: AppBar(
         title: Text(
           'Tanglish',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             letterSpacing: 1.5,
+            color: Colors.white,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.settings),
-            onPressed: () {
-              // Navigate to settings page
-              Navigator.pushNamed(context, '/settings');
-            },
-          ),
-        ],
+        backgroundColor: _bgDarkBlue,
+        elevation: 0,
       ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Welcome banner
             Container(
+              width: double.infinity,
               padding: EdgeInsets.all(20),
+              margin: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [_purpleAccent.withOpacity(0.8), _pinkAccent.withOpacity(0.8)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: _purpleAccent.withOpacity(0.3),
+                    blurRadius: 10,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Welcome back!',
+                    'Welcome to Tanglish Subtile Generation App!',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF6A1B9A),
+                      color: Colors.white,
                     ),
                   ),
-                  SizedBox(height: 5),
+                  SizedBox(height: 8),
                   Text(
-                    'Create amazing Tanglish subtitles for your videos',
+                    'Create amazing subtitles for your videos with a simple click',
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.grey.shade700,
+                      color: Colors.white.withOpacity(0.9),
                     ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Quick actions section
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildQuickActionCard(
-                    context,
-                    'Upload',
-                    Icons.upload_file,
-                    Color(0xFF7B1FA2),
-                        () => Navigator.pushNamed(context, '/upload'),
-                  ),
-                  _buildQuickActionCard(
-                    context,
-                    'Generate',
-                    Icons.subtitles,
-                    Color(0xFF8E24AA),
-                        () => Navigator.pushNamed(context, '/subtitle'),
-                  ),
-                  _buildQuickActionCard(
-                    context,
-                    'History',
-                    Icons.history,
-                    Color(0xFF9C27B0),
-                        () => Navigator.pushNamed(context, '/history'),
                   ),
                 ],
               ),
@@ -118,7 +103,7 @@ class _HomePageState extends State<HomePage> {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF6A1B9A),
+                      color: Colors.white,
                     ),
                   ),
                   SizedBox(height: 16),
@@ -148,26 +133,16 @@ class _HomePageState extends State<HomePage> {
               margin: EdgeInsets.all(16),
               padding: EdgeInsets.all(16),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFF9C27B0), Color(0xFF6A1B9A)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+                color: _fgMutedBlue,
                 borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.purple.withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: Offset(0, 4),
-                  ),
-                ],
+                border: Border.all(color: _brightPurpleButton.withOpacity(0.5), width: 1),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.lightbulb, color: Colors.yellow),
+                      Icon(Icons.lightbulb, color: _pinkAccent),
                       SizedBox(width: 8),
                       Text(
                         'Pro Tip',
@@ -183,7 +158,7 @@ class _HomePageState extends State<HomePage> {
                   Text(
                     'For better subtitle accuracy, ensure your video has clear audio and minimal background noise.',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: Colors.white.withOpacity(0.9),
                       fontSize: 14,
                     ),
                   ),
@@ -195,12 +170,12 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       ),
-      // Replace FloatingActionButton with a standard bottom nav bar
+      // Updated bottom navigation bar without the Home button
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
-        selectedItemColor: Color(0xFF6A1B9A),
-        unselectedItemColor: Colors.grey,
+        backgroundColor: _fgMutedBlue,
+        selectedItemColor: _pinkAccent,
+        unselectedItemColor: Colors.white70,
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
         elevation: 8,
@@ -210,63 +185,18 @@ class _HomePageState extends State<HomePage> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
+            icon: Icon(Icons.history),
+            label: 'History',
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.upload_file),
             label: 'Upload',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.subtitles),
-            label: 'Subtitles',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history),
-            label: 'History',
+            icon: Icon(Icons.settings),
+            label: 'Settings',
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildQuickActionCard(
-      BuildContext context,
-      String title,
-      IconData icon,
-      Color color,
-      VoidCallback onTap,
-      ) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: MediaQuery.of(context).size.width * 0.27,
-        padding: EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: color.withOpacity(0.3),
-              blurRadius: 6,
-              offset: Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              color: Colors.white,
-              size: 32,
-            ),
-            SizedBox(height: 8),
-            Text(
-              title,
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -275,11 +205,11 @@ class _HomePageState extends State<HomePage> {
     return Container(
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: _fgMutedBlue,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withOpacity(0.15),
             blurRadius: 5,
             offset: Offset(0, 2),
           ),
@@ -291,13 +221,17 @@ class _HomePageState extends State<HomePage> {
             height: 60,
             width: 60,
             decoration: BoxDecoration(
-              color: Color(0xFFE1BEE7),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [_pinkAccent.withOpacity(0.7), _purpleAccent.withOpacity(0.7)],
+              ),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Center(
               child: Icon(
                 Icons.video_file,
-                color: Color(0xFF6A1B9A),
+                color: Colors.white,
                 size: 30,
               ),
             ),
@@ -312,13 +246,14 @@ class _HomePageState extends State<HomePage> {
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
+                    color: Colors.white,
                   ),
                 ),
                 SizedBox(height: 4),
                 Text(
                   date,
                   style: TextStyle(
-                    color: Colors.grey.shade600,
+                    color: Colors.white70,
                     fontSize: 12,
                   ),
                 ),
@@ -328,13 +263,13 @@ class _HomePageState extends State<HomePage> {
           Container(
             padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: Color(0xFFE1BEE7),
+              color: _brightPurpleButton.withOpacity(0.5),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
               duration,
               style: TextStyle(
-                color: Color(0xFF6A1B9A),
+                color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),
             ),

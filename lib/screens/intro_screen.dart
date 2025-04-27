@@ -1,16 +1,22 @@
 import 'package:flutter/material.dart';
 
 class IntroScreen extends StatelessWidget {
+  // Define the colors to match the HomePage theme
+  final Color _pinkAccent = Color(0xFFED2A90);
+  final Color _purpleAccent = Color(0xFFAB49D0);
+  final Color _fgMutedBlue = Color(0xFF142748);
+  final Color _bgDarkBlue = Color(0xFF0D2146);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFF3E5F5),
+      backgroundColor: _bgDarkBlue, // Dark blue background
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFF9C27B0), Color(0xFF6A1B9A)],
+            colors: [_purpleAccent.withOpacity(0.6), _pinkAccent.withOpacity(0.6)],
           ),
         ),
         child: SafeArea(
@@ -26,7 +32,7 @@ class IntroScreen extends StatelessWidget {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withOpacity(0.2),
                         blurRadius: 20,
                         spreadRadius: 5,
                       ),
@@ -51,7 +57,7 @@ class IntroScreen extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.w300,
-                    color: Colors.white,
+                    color: Colors.white.withOpacity(0.9),
                     letterSpacing: 1.5,
                   ),
                 ),
@@ -74,7 +80,7 @@ class IntroScreen extends StatelessWidget {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
-                    foregroundColor: Color(0xFF6A1B9A),
+                    foregroundColor: _bgDarkBlue, // Dark text
                     padding: EdgeInsets.symmetric(horizontal: 36, vertical: 15),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
